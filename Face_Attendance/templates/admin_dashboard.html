@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Dashboard — Face Attendance System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .dashboard-header {
+            background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent);
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            margin: 0 0 0.5rem 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .stat-card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--accent), #5df2c6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, rgba(59,227,176,0.1), rgba(93,242,198,0.1));
+            border: 1px solid rgba(59,227,176,0.3);
+            padding: 1.5rem;
+            border-radius: 10px;
+            color: #eaf6f0;
+            text-decoration: none;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, rgba(59,227,176,0.2), rgba(93,242,198,0.2));
+            transform: translateY(-3px);
+        }
+
+        .logout-btn {
+            background: rgba(255,68,68,0.1);
+            border: 1px solid rgba(255,68,68,0.3);
+            color: #ff4444;
+            padding: 0.7rem 1.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            border-color: #ff4444;
+            background: rgba(255,68,68,0.15);
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-content {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-inner">
+            <div class="brand">
+                <h1 class="college">Admin Panel</h1>
+                <p class="tag">Face Recognition Attendance System</p>
+            </div>
+            <nav class="nav">
+                <a href="/">Home</a>
+                <a href="/admin-logout">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container main-grid">
+        <div class="dashboard-header">
+            <h1 style="margin: 0; color: #eaf6f0;">Welcome to Admin Dashboard</h1>
+            <p style="margin: 0.5rem 0 0 0; color: var(--muted);">Manage your Face Attendance System</p>
+        </div>
+
+        <section class="dashboard-content">
+            <div class="stat-card">
+                <h3>Total Students</h3>
+                <p class="value">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Today's Attendance</h3>
+                <p class="value">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>System Status</h3>
+                <p class="value" style="color: #3be3b0;">✓ Active</p>
+            </div>
+        </section>
+
+        <div class="action-buttons">
+            <a href="/register" class="action-btn">📸 Register New Student</a>
+            <a href="/train" class="action-btn">🤖 Train Model</a>
+            <a href="/attendance" class="action-btn">📊 View Attendance</a>
+            <a href="/manage-users" class="action-btn">👥 Manage Users</a>
+        </div>
+
+        <a href="/admin-logout" class="logout-btn">Logout</a>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>© Sankara College of Science and commerce — Admin Panel</p>
+        </div>
+    </footer>
+</body>
+</html>

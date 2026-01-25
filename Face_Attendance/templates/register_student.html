@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Register Student — Face Attendance System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .register-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .register-card {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(3,10,18,0.8);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .register-header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, var(--accent), #5df2c6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .register-header p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #eaf6f0;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: #eaf6f0;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(59,227,176,0.03);
+            box-shadow: 0 0 12px rgba(59,227,176,0.15);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(234,246,240,0.5);
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 0.85rem;
+            background: linear-gradient(90deg, var(--accent), #5df2c6);
+            color: #042018;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .register-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59,227,176,0.3);
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-inner">
+            <div class="brand">
+                <h1 class="college">Sankara College of Science and commerce</h1>
+                <p class="tag">Face Recognition Attendance</p>
+            </div>
+            <nav class="nav">
+                <a href="/">Home</a>
+                <a href="/register">Register</a>
+                <a href="/train">Train</a>
+                <a href="/attendance">Attendance</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container register-container">
+        <div class="register-card">
+            <div class="register-header">
+                <h1>Register Student</h1>
+                <p>Add a new student to the system</p>
+            </div>
+
+            <form method="POST" action="/admin/register-student">
+                <div class="form-group">
+                    <label for="student_id">Student ID</label>
+                    <input type="number" id="student_id" name="student_id" placeholder="Enter student ID" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" placeholder="Enter full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="department">Department</label>
+                    <input type="text" id="department" name="department" placeholder="Enter department" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="year">Academic Year</label>
+                    <input type="number" id="year" name="year" placeholder="Enter year (1-4)" min="1" max="4" required>
+                </div>
+
+                <button type="submit" class="register-btn">Register Student</button>
+            </form>
+
+            <a href="/" class="back-link">← Back to Home</a>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>© Sankara College of Science and commerce — Built with ❤️</p>
+        </div>
+    </footer>
+</body>
+</html>

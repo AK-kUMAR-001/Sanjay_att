@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance - Face Recognition Attendance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root{ 
+            --bg-1:#0f1724; 
+            --bg-2:#1b2a44; 
+            --accent:#3be3b0; 
+            --muted:hsla(0,0%,100%,0.75); 
+            --card: rgba(255,255,255,0.04); 
+        } 
+        *{box-sizing:border-box} 
+        body{ 
+            margin:0; 
+            font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, Arial; 
+            background: linear-gradient(135deg,var(--bg-1),var(--bg-2)); 
+            color:#eaf6f0; 
+            -webkit-font-smoothing:antialiased; 
+            min-height: 100vh;
+        } 
+        .container{max-width:1100px;margin:0 auto;padding:1rem 1.25rem} 
+        .site-header{padding:1rem 0;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);backdrop-filter:blur(4px)} 
+        .header-inner{display:flex;align-items:center;justify-content:space-between} 
+        .brand .college{margin:0;font-size:1.15rem;font-weight:700;letter-spacing:0.2px; color: #fff;} 
+        .brand .tag{margin:0;color:var(--muted);font-size:0.9rem} 
+        .nav a{color:var(--muted);text-decoration:none;margin-left:1rem;padding:0.4rem 0.6rem;border-radius:6px;transition:all .18s} 
+        .nav a:hover{color:#fff;background:rgba(255,255,255,0.03)} 
+        
+        .card{background:var(--card);padding:2rem;border-radius:12px;box-shadow:0 6px 20px rgba(3,10,18,0.6); margin-top: 2rem;}
+        h2 { margin-top: 0; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+            color: var(--muted);
+        }
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        th {
+            color: #fff;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .site-footer{padding:1rem 0;text-align:center;color:var(--muted);border-top:1px solid rgba(255,255,255,0.02);margin-top:2rem}
+        
+        @media (max-width:900px){ 
+            .header-inner{flex-direction:column;align-items:flex-start;gap:0.6rem} 
+            th, td { padding: 0.8rem 0.5rem; font-size: 0.9rem; }
+        } 
+    </style>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="container header-inner">
+            <div class="brand">
+                <h1 class="college">Sankara College of Science and Commerce</h1>
+                <p class="tag">Face Recognition Attendance System</p>
+            </div>
+            <nav class="nav">
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('register') }}">Register</a>
+                <a href="{{ url_for('train') }}">Train</a>
+                <a href="{{ url_for('attendance') }}">Attendance</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Attendance Records</h2>
+                <a href="{{ url_for('send_report') }}" class="btn-whatsapp" style="text-decoration: none; background: #25D366; color: white; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600;">Send WhatsApp Report</a>
+            </div>
+            
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="flash" style="margin-bottom: 1rem; padding: 1rem; border: 1px solid var(--accent); border-radius: 8px; background: rgba(59, 227, 176, 0.1);">
+                {% for message in messages %}
+                  <p style="margin: 0;">{{ message }}</p>
+                {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+        
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td>{{ record[0] }}</td>
+                        <td>{{ record[1] }}</td>
+                        <td>{{ record[2] }}</td>
+                        <td>{{ record[3] }}</td>
+                        <td>{{ record[4] }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem;">No attendance records found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container">
+            &copy; 2026 Sankara College. All rights reserved.
+        </div>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,56 @@
+
+:root{
+    --bg-1:#0f1724;
+    --bg-2:#1b2a44;
+    --accent:#3be3b0;
+    --muted:hsla(0,0%,100%,0.75);
+    --card: rgba(255,255,255,0.04);
+}
+*{box-sizing:border-box}
+body{
+    margin:0;
+    font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+    background: linear-gradient(135deg,var(--bg-1),var(--bg-2));
+    color:#eaf6f0;
+    -webkit-font-smoothing:antialiased;
+}
+.container{max-width:1100px;margin:0 auto;padding:1rem 1.25rem}
+.site-header{padding:1rem 0;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);backdrop-filter:blur(4px)}
+.header-inner{display:flex;align-items:center;justify-content:space-between}
+.brand .college{margin:0;font-size:1.15rem;font-weight:700;letter-spacing:0.2px}
+.brand .tag{margin:0;color:var(--muted);font-size:0.9rem}
+.nav a{color:var(--muted);text-decoration:none;margin-left:1rem;padding:0.4rem 0.6rem;border-radius:6px;transition:all .18s}
+.nav a:hover{color:#fff;background:rgba(255,255,255,0.03)}
+
+.main-grid{padding:2rem 0}
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;align-items:center}
+.hero-card{background:var(--card);padding:1.6rem;border-radius:12px;box-shadow:0 6px 20px rgba(3,10,18,0.6)}
+.hero-card h2{margin:0 0 0.35rem 0;font-size:1.6rem}
+.hero-card p{margin:0 0 1rem 0;color:var(--muted)}
+.controls{display:flex;gap:0.75rem}
+.btn{display:inline-block;padding:0.6rem 0.9rem;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.08);color:var(--muted);text-decoration:none;font-weight:600}
+.btn.primary{background:linear-gradient(90deg,var(--accent),#5df2c6);color:#042018;border:0}
+.btn:hover{transform:translateY(-3px)}
+
+.video-card{display:flex;flex-direction:column;align-items:center;gap:0.8rem}
+.video-wrap{width:100%;background:#07101a;padding:0.6rem;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+.video-wrap img{width:100%;height:auto;border-radius:8px;display:block}
+.status{margin:0;color:var(--muted);font-size:0.95rem}
+
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.25rem}
+.feature{background:var(--card);padding:1rem;border-radius:10px;text-align:center}
+.feature h3{margin:0 0 0.5rem 0}
+.feature p{margin:0;color:var(--muted);font-size:0.95rem}
+
+.site-footer{padding:1rem 0;text-align:center;color:var(--muted);border-top:1px solid rgba(255,255,255,0.02);margin-top:2rem}
+
+@media (max-width:900px){
+    .hero{grid-template-columns:1fr}
+    .features{grid-template-columns:1fr;}
+    .header-inner{flex-direction:column;align-items:flex-start;gap:0.6rem}
+}
+
+@media (max-width:480px){
+    .brand .college{font-size:1rem}
+    .nav a{margin-left:0.4rem;padding:0.35rem 0.5rem}
+}
