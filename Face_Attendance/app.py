@@ -39,7 +39,7 @@ COOLDOWN_DURATION = 5 # Seconds before re-detecting same person (starts after ho
 TWILIO_SID =  "" 
 TWILIO_AUTH_TOKEN = ""
 TWILIO_FROM = "whatsapp:+14155238886"
-TWILIO_TO = "whatsapp:+918925081899" # Staff number
+TWILIO_TO = "whatsapp:+919791005567" # Staff number
 
 # Email Configuration (Gmail)
 # NOTE: For Gmail, use an App Password if 2FA is enabled, or allow "Less Secure Apps"
