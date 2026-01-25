@@ -36,8 +36,8 @@ COOLDOWN_DURATION = 5 # Seconds before re-detecting same person (starts after ho
 
 # --- Configuration ---
 # Twilio WhatsApp (Replace with your SID and Token from Twilio Console)
-TWILIO_SID =  "" 
-TWILIO_AUTH_TOKEN = ""
+TWILIO_SID =  "ACefad1359c2910c3d38d72185d5567496"
+TWILIO_AUTH_TOKEN = "1cfabf9fc5cceb13d3afe6cf2d39ad23"
 TWILIO_FROM = "whatsapp:+14155238886"
 TWILIO_TO = "whatsapp:+919791005567" # Staff number
 
