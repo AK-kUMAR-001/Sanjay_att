@@ -3,6 +3,7 @@ import cv2
 import face_recognition
 import numpy as np
 from face_recognizer import FaceRecognizer
+from face_recognizer_pt import FaceRecognizerPT
 from database import mark_attendance, init_db, get_attendance_records, generate_session_report
 import os
 import time
@@ -26,6 +27,7 @@ init_db()
 
 # Initialize Recognizer
 recognizer = FaceRecognizer()
+recognizer_pt = FaceRecognizerPT()
 
 # Global state for UI hold logic: {student_id: {'until': timestamp, 'name': name}}
 display_state = {}
@@ -36,16 +38,18 @@ COOLDOWN_DURATION = 5 # Seconds before re-detecting same person (starts after ho
 
 # --- Configuration ---
 # Twilio WhatsApp (Replace with your SID and Token from Twilio Console)
-TWILIO_SID =  "" 
-TWILIO_AUTH_TOKEN = ""
+TWILIO_SID =  "ACefad1359c2910c3d38d72185d5567496"
+TWILIO_AUTH_TOKEN = "1cfabf9fc5cceb13d3afe6cf2d39ad23"
 TWILIO_FROM = "whatsapp:+14155238886"
-TWILIO_TO = "whatsapp:+918925081899" # Staff number
+TWILIO_TO = "whatsapp:+91919791005567" # Staff number
 
 # Email Configuration (Gmail)
 # NOTE: For Gmail, use an App Password if 2FA is enabled, or allow "Less Secure Apps"
 EMAIL_SENDER = "akshayprabhu19012005@gmail.com"
 EMAIL_PASSWORD = "qixo ixhb txqf qvtq"  # App Password
 EMAIL_RECEIVER = "akshayprabhu19012005@gmail.com" # Sending to self by default
+
+import json
 
 # Global Camera Management
 video_capture = None
@@ -54,6 +58,35 @@ is_attendance_active = False
 session_start_time = None
 current_session_name = "Session"
 marked_students = set()
+SESSION_FILE = "session_state.json"
+
+def save_session_state():
+    state = {
+        "is_active": is_attendance_active,
+        "start_time": session_start_time.isoformat() if session_start_time else None,
+        "session_name": current_session_name
+    }
+    with open(SESSION_FILE, 'w') as f:
+        json.dump(state, f)
+
+def load_session_state():
+    global is_attendance_active, session_start_time, current_session_name
+    if os.path.exists(SESSION_FILE):
+        try:
+            with open(SESSION_FILE, 'r') as f:
+                state = json.load(f)
+                is_attendance_active = state.get("is_active", False)
+                start_time_str = state.get("start_time")
+                if start_time_str:
+                    session_start_time = datetime.fromisoformat(start_time_str)
+                else:
+                    session_start_time = None
+                current_session_name = state.get("session_name", "Session")
+        except Exception as e:
+            print(f"Error loading session state: {e}")
+
+# Load state on startup
+load_session_state()
 
 def send_email_report(file_path, summary):
     try:
@@ -89,28 +122,50 @@ def send_email_report(file_path, summary):
 def get_camera():
     global video_capture
     if video_capture is None or not video_capture.isOpened():
-        # PRIORITIZE DSHOW (DirectShow) on Windows for stability
-        # MSMF (default) often causes Heap Corruption/Crashes
-        print("Opening camera with DSHOW...")
-        video_capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        # Priority 1: Index 0 (Standard Default) - Most compatible
+        print("Attempting to open camera (Index 0, Default)...")
+        video_capture = cv2.VideoCapture(0)
         
-        # If DSHOW fails, try default (MSMF)
-        if not video_capture.isOpened():
-             print("DSHOW failed. Trying default backend...")
-             video_capture = cv2.VideoCapture(0)
-             
-        # If index 0 fails, try index 1 with DSHOW
-        if not video_capture.isOpened():
-            print("Camera index 0 failed. Trying index 1 (DSHOW)...")
+        # Priority 2: Index 0 (DSHOW) - Faster on some Windows PCs
+        if not video_capture.isOpened() or not video_capture.read()[0]:
+            print("Index 0 (Default) failed. Trying Index 0 (DSHOW)...")
+            if video_capture: video_capture.release()
+            video_capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+            
+        # Priority 3: Index 1 (Standard Default) - External Camera
+        if not video_capture.isOpened() or not video_capture.read()[0]:
+            print("Index 0 failed. Trying Index 1 (Default)...")
+            if video_capture: video_capture.release()
+            video_capture = cv2.VideoCapture(1)
+            
+        # Priority 4: Index 1 (DSHOW)
+        if not video_capture.isOpened() or not video_capture.read()[0]:
+            print("Index 1 (Default) failed. Trying Index 1 (DSHOW)...")
+            if video_capture: video_capture.release()
             video_capture = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+
+        # Final Verification
+        if video_capture.isOpened():
+            # Read a test frame to ensure stream is valid
+            ret, _ = video_capture.read()
+            if not ret:
+                print("CRITICAL: Camera opened but failed to return a frame.")
+                video_capture.release()
+                video_capture = None
+            else:
+                print("Camera initialized successfully.")
+        else:
+            print("CRITICAL: No working camera found on Index 0 or 1.")
+            video_capture = None
             
     return video_capture
 
 def release_camera():
     global video_capture
-    if video_capture is not None and video_capture.isOpened():
+    if video_capture is not None:
         video_capture.release()
         video_capture = None
+    cv2.destroyAllWindows()
 
 def generate_frames():
     global is_registering, is_attendance_active
@@ -121,18 +176,34 @@ def generate_frames():
             continue
             
         if not is_attendance_active:
-            # Yield a black placeholder frame
-            frame = np.zeros((480, 640, 3), dtype=np.uint8)
-            cv2.putText(frame, "Attendance Stopped", (160, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (100, 100, 100), 2)
-            cv2.putText(frame, "Click Start to Resume", (170, 280), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (100, 100, 100), 1)
-            ret, buffer = cv2.imencode('.jpg', frame)
-            frame_bytes = buffer.tobytes()
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+            # KEEP CAMERA OPEN but show "Attendance Stopped"
+            # This prevents the DSHOW/MSMF crash when toggling on/off repeatedly
             
-            # Release camera resource while inactive
-            release_camera()
-            time.sleep(0.5)
+            camera = get_camera()
+            if camera and camera.isOpened():
+                success, frame = camera.read()
+                if success:
+                    # Darken the frame to indicate inactivity
+                    frame = cv2.addWeighted(frame, 0.3, np.zeros(frame.shape, frame.dtype), 0, 0)
+                    cv2.putText(frame, "Attendance Stopped", (160, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+                    cv2.putText(frame, "Click Start to Resume", (170, 280), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (200, 200, 200), 1)
+                    
+                    ret, buffer = cv2.imencode('.jpg', frame)
+                    frame_bytes = buffer.tobytes()
+                    yield (b'--frame\r\n'
+                           b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+                else:
+                    # Camera failed to read, try resetting
+                    release_camera()
+            else:
+                # Fallback if camera completely dead
+                frame = np.zeros((480, 640, 3), dtype=np.uint8)
+                cv2.putText(frame, "Camera Disconnected", (160, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (100, 100, 100), 2)
+                ret, buffer = cv2.imencode('.jpg', frame)
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+            
+            time.sleep(0.05) # Low FPS when inactive to save CPU
             continue
             
         camera = get_camera()
@@ -203,8 +274,32 @@ def generate_frames():
             
             face_names = []
             
-            for face_encoding in face_encodings:
-                name, student_id = recognizer.recognize_face(face_encoding)
+            for i, face_encoding in enumerate(face_encodings):
+                # 1. Dlib Recognition
+                name_dlib, id_dlib = recognizer.recognize_face(face_encoding)
+                
+                # 2. PyTorch FaceNet Recognition
+                top, right, bottom, left = face_locations[i]
+                face_img = rgb_small_frame[top:bottom, left:right]
+                name_pt, id_pt, dist_pt = recognizer_pt.recognize_face(face_img)
+
+                # 3. Double Verification Logic
+                name = "Unknown"
+                student_id = None
+                
+                if name_dlib != "Unknown" and name_pt != "Unknown":
+                    if id_dlib == id_pt:
+                        # Both models agree -> HIGH CONFIDENCE
+                        name = name_dlib
+                        student_id = id_dlib
+                        print(f"Verified: {name} (Dlib & PT agree)")
+                    else:
+                        # Models disagree -> Conflict -> Treat as Unknown
+                        print(f"Conflict: Dlib said {name_dlib}, PT said {name_pt}")
+                elif name_dlib != "Unknown":
+                    print(f"Dlib Only: {name_dlib} (PT Unsure: {dist_pt:.2f})")
+                elif name_pt != "Unknown":
+                    print(f"PT Only: {name_pt} (Dlib Unsure)")
                 
                 if name != "Unknown" and student_id:
                     display_name = f"{name} ({student_id})"
@@ -263,6 +358,7 @@ def start_attendance():
     is_attendance_active = True
     session_start_time = datetime.now()
     marked_students.clear() # Reset for new session
+    save_session_state() # Save state
     
     flash(f"{current_session_name} Started at {session_start_time.strftime('%H:%M:%S')}")
     return redirect(url_for('index'))
@@ -271,6 +367,7 @@ def start_attendance():
 def stop_attendance():
     global is_attendance_active, session_start_time, current_session_name
     is_attendance_active = False
+    save_session_state() # Update state to inactive
     
     msg = f"{current_session_name} Stopped."
     
@@ -419,4 +516,9 @@ def attendance():
     return render_template('attendance.html', records=records)
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    print("Starting Flask App...")
+    # release_camera() # Ensure clean state on startup
+    try:
+        app.run(debug=False, host='0.0.0.0', port=5000)
+    except Exception as e:
+        print(f"Flask failed: {e}")

@@ -77,22 +77,27 @@ def log_to_excel(student_id, name, date_str, time_str):
                 # We actually just want to append using pandas functionality if possible, 
                 # but pandas append is deprecated.
                 # Simpler way: Read, Append, Write back (Inefficient for huge data but fine here)
-                df_existing = pd.read_excel(EXCEL_FILE)
+                try:
+                     df_existing = pd.read_excel(EXCEL_FILE)
+                except ValueError:
+                     # Sheet might be empty or file corrupt
+                     df_existing = pd.DataFrame(columns=["Student ID", "Name", "Date", "Time", "Status"])
 
                 # Check if this student is already marked within last 3 minutes
-                student_rows = df_existing[df_existing['Student ID'].astype(str) == str(student_id)]
-                if not student_rows.empty:
-                    last_row = student_rows.iloc[-1]
-                    last_date = str(last_row['Date'])
-                    last_time = str(last_row['Time'])
-                    try:
-                        last_dt = datetime.strptime(f"{last_date} {last_time}", "%Y-%m-%d %H:%M:%S")
-                        current_dt = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M:%S")
-                        if (current_dt - last_dt) < timedelta(minutes=3):
-                             print(f"Skipping Excel log: {name} marked recently.")
-                             return
-                    except ValueError:
-                        pass
+                if not df_existing.empty:
+                    student_rows = df_existing[df_existing['Student ID'].astype(str) == str(student_id)]
+                    if not student_rows.empty:
+                        last_row = student_rows.iloc[-1]
+                        last_date = str(last_row['Date'])
+                        last_time = str(last_row['Time'])
+                        try:
+                            last_dt = datetime.strptime(f"{last_date} {last_time}", "%Y-%m-%d %H:%M:%S")
+                            current_dt = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M:%S")
+                            if (current_dt - last_dt) < timedelta(minutes=3):
+                                 print(f"Skipping Excel log: {name} marked recently.")
+                                 return
+                        except ValueError:
+                            pass
 
                 df_combined = pd.concat([df_existing, new_entry], ignore_index=True)
                 
@@ -105,6 +110,9 @@ def log_to_excel(student_id, name, date_str, time_str):
                      for cell in worksheet[1]:
                         cell.fill = header_fill
                         cell.font = header_font
+                     
+    except Exception as e:
+        print(f"Error logging to Excel: {e}")
 
         print(f"Logged to Excel: {name}")
     except Exception as e:
